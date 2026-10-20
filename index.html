@@ -39,6 +39,7 @@ button.link{background:none;color:var(--w);width:auto;padding:6px;margin:0;text-
 .row:last-child{border:0}.row b{font-size:19px}
 #toast{position:fixed;left:16px;right:16px;bottom:18px;max-width:528px;margin:auto;padding:14px;border-radius:10px;background:#fff;color:#111;display:none;z-index:9}
 #toast.bad{background:var(--err);color:#fff}
+.done{width:auto;margin:0;padding:8px 12px;font-size:15px;background:transparent;color:var(--w);border:1.5px solid var(--w)}
 .sep{text-align:center;color:var(--mut);margin:14px 0 0}
 .hide{display:none!important}
 .tag{display:inline-block;background:#2A1E08;border:1px solid var(--w);border-radius:6px;padding:1px 8px;margin:3px 4px 3px 0;font-size:15px}
@@ -120,7 +121,7 @@ button.link{background:none;color:var(--w);width:auto;padding:6px;margin:0;text-
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,signOut,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,createUserWithEmailAndPassword,RecaptchaVerifier,signInWithPhoneNumber} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,onSnapshot,collection,query,orderBy,serverTimestamp,increment} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,onSnapshot,collection,query,orderBy,serverTimestamp,increment,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ====== यहाँ अपनी जानकारी डालें ====== */
 const firebaseConfig = {
@@ -165,9 +166,10 @@ onAuthStateChanged(auth,u=>{
     $("dS").textContent=fmt(d.start);$("dE").textContent=fmt(d.end);
     $("sW").textContent=kg(d.wheat);$("sR").textContent=kg(d.rice);$("sS").textContent=kg(d.sugar)},e=>say(errTxt(e),true)));
   if(isOwner)unsubs.push(onSnapshot(query(collection(db,"appointments"),orderBy("ts")),s=>{
-    $("aL").innerHTML=s.empty?"अभी कोई नहीं":s.docs.map((x,i)=>{const d=x.data();return `<div class="row"><span>${i+1}. ${esc(d.name)}</span><b>${esc(d.card)}</b></div>`}).join("")},e=>say(errTxt(e),true)));
+    $("aL").innerHTML=s.empty?"अभी कोई नहीं":s.docs.map((x,i)=>{const d=x.data();return `<div class="row"><span>${i+1}. ${esc(d.name)}<br><small style="color:var(--mut)">${esc(d.card)}</small></span><button class="done" data-id="${esc(x.id)}">राशन मिल गया</button></div>`}).join("")},e=>say(errTxt(e),true)));
 });
 
+$("aL").onclick=e=>{const b=e.target.closest(".done");if(!b)return;run(async()=>{await deleteDoc(doc(db,"appointments",b.dataset.id));say("सूची से हटा दिया")})};
 $("bApp").onclick=()=>run(async()=>{
   const n=$("aN").value.trim(),c=$("aC").value.trim();if(!n||!c)return say("नाम और राशन कार्ड नंबर लिखें",true);
   const r=doc(db,"appointments",c);
