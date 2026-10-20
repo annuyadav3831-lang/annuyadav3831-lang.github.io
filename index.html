@@ -132,6 +132,7 @@ const firebaseConfig = {
   messagingSenderId: "796592089214",
   appId: "1:796592089214:web:ac77a3f6379d15be39502f"
 };
+const NTFY_TOPIC = "ration-6769ae7284f3";
 const OWNER_EMAIL = "annuyadav3831@gmail.com";
 /* ====================================== */
 
@@ -173,7 +174,8 @@ $("aL").onclick=e=>{const b=e.target.closest(".done");if(!b)return;run(async()=>
 $("bApp").onclick=()=>run(async()=>{
   const n=$("aN").value.trim(),c=$("aC").value.trim();if(!n||!c)return say("नाम और राशन कार्ड नंबर लिखें",true);
   const r=doc(db,"appointments",c);
-  try{await setDoc(r,{name:n,card:c,uid:auth.currentUser.uid,ts:serverTimestamp()});say("अपॉइंटमेंट बुक हो गई");$("aN").value=$("aC").value=""}
+  try{await setDoc(r,{name:n,card:c,uid:auth.currentUser.uid,ts:serverTimestamp()});say("अपॉइंटमेंट बुक हो गई");
+    fetch("https://ntfy.sh/",{method:"POST",body:JSON.stringify({topic:NTFY_TOPIC,title:"नई अपॉइंटमेंट",message:"नाम: "+n+"\nराशन कार्ड: "+c+"\nसमय: "+new Date().toLocaleString("hi-IN",{dateStyle:"medium",timeStyle:"short"}),priority:4})}).catch(()=>{});$("aN").value=$("aC").value=""}
   catch(e){if(e.code==="permission-denied")say("इस कार्ड की अपॉइंटमेंट पहले से बुक है",true);else throw e}});
 
 $("bView").onclick=()=>run(async()=>{
